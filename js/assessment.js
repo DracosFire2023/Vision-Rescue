@@ -143,7 +143,7 @@ const Assessment = (() => {
       this.ctx = canvas.getContext('2d');
       this.cal = cal;
       this.cpd = cpd;
-      this.staircase = new Staircase({ startContrast: 0.5, reversalsToStop: 8 });
+      this.staircase = new Staircase({ startContrast: 0.5, reversalsToStop: 6, maxTrials: 24 });
     }
 
     _cyclesPerPatch(radiusPx) {
@@ -186,7 +186,7 @@ const Assessment = (() => {
       this.ctx = canvas.getContext('2d');
       this.cal = cal;
       this.pedestal = pedestal; // 0.3 or 0.6
-      this.staircase = new Staircase({ startContrast: pedestal * 0.3, minContrast: 0.01, maxContrast: 1 - pedestal, reversalsToStop: 8, stepDb: 3 });
+      this.staircase = new Staircase({ startContrast: pedestal * 0.3, minContrast: 0.01, maxContrast: 1 - pedestal, reversalsToStop: 6, stepDb: 3, maxTrials: 24 });
     }
 
     presentTrial() {
