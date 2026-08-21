@@ -18,6 +18,10 @@ class Staircase {
    *  minStepDb       - step size floor (staircase stops shrinking below this)
    *  reversalsToStop - how many reversals before threshold is considered found
    *  correctToStepDown - consecutive correct trials required to decrease contrast
+   *  maxTrials       - hard cap; staircase force-completes here even without
+   *                    enough reversals (e.g. the person's true threshold is
+   *                    at or beyond the contrast floor/ceiling, so direction
+   *                    never flips). Without this, that case never ends.
    */
   constructor(opts = {}) {
     this.contrast = opts.startContrast ?? 0.5;
@@ -27,6 +31,8 @@ class Staircase {
     this.minStepDb = opts.minStepDb ?? 1;
     this.reversalsToStop = opts.reversalsToStop ?? 8;
     this.correctToStepDown = opts.correctToStepDown ?? 3;
+    this.maxTrials = opts.maxTrials ?? 40;
+    this.hitFloorOrCeiling = false;
 
     this.consecutiveCorrect = 0;
     this.direction = null; // 'up' | 'down'
@@ -73,7 +79,9 @@ class Staircase {
       stepped = true;
     }
 
+    const preClamp = this.contrast;
     this.contrast = Math.max(this.minContrast, Math.min(this.maxContrast, this.contrast));
+    this.hitFloorOrCeiling = preClamp !== this.contrast;
 
     if (stepped) {
       if (this.direction && newDirection !== this.direction) {
@@ -85,6 +93,13 @@ class Staircase {
     }
 
     if (this.reversals.length >= this.reversalsToStop) {
+      this.done = true;
+    }
+
+    // Safety net: without this, a person who can always detect the pattern
+    // even at the contrast floor (direction never flips, so no reversal is
+    // ever logged) would run this staircase forever. Force-complete instead.
+    if (this.trialCount >= this.maxTrials) {
       this.done = true;
     }
 
